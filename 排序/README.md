@@ -25,7 +25,7 @@ public:
 ```c++
 // 快速排序
 void quickSort(vector<int>& nums, int left, int right){
-    if(left>=right) return;
+    if(left >= right) return;
     // 随机交换
     swap(nums[left], nums[rand()%(right-left+1)+left]);
     int target = nums[left], lBound = left, rBound = right, i = left;
@@ -40,7 +40,9 @@ void quickSort(vector<int>& nums, int left, int right){
 }
 ```
 
-### 堆排序
+**快速选择**：快排的一个经典应用就是找到数组中第k大个数，使用"快排+二分"的思想进行编码，能够将时间复杂度控制在O(n)。题215.
+
+### 堆排序*
 
 堆主要利用数组模拟一棵二叉树，其中获取最大值叫大根堆，获取最小值叫小根堆。几个需要注意的点：
 
@@ -118,7 +120,7 @@ void merge(vector<int>& arr, int L, int R, int M){
 }
 // 分治
 void process(vector<int>& arr, int L, int R){
-    if(L==R)    return ;
+    if(L == R)    return ;
     int mid = (R - L) / 2 + L;
     process(arr, L, mid);
     process(arr, mid+1, R);
@@ -172,3 +174,82 @@ int process(vector<int>& arr, int L, int R){
 }
 ```
 
+上面介绍的排序算法都是基于“比较”的排序方法，这类排序算法时间复杂度最优就是O(nlogn)，下面介绍一些"非比较"的排序方法，这类方法在某些情况下性能可以达到更优。
+
+### 计数排序 *
+
+> 参考：https://www.cxyxiaowu.com/5437.html
+
+当我们确定了数据的范围在一个比较小的区间内的话，比如`0~10`的整数区间内，我们就可以采用计数排序：初始化一个固定大小的数组cnt，分别记录每个整数出现的次数，然后再依次输出即可。
+
+**改进1**：我们并不需要将cnt与记录值一一对应起来，而是记录数组中最小值与最大值之间的增值即可，比如范围在`90~100`的数据，我们也只需要开辟一个长度为11的数组空间。
+
+**改进2**：在某些情况下，我们需要构造稳定排序（比如成绩排名），不希望经过计数排序后改变了原先的位置，所以就要用到一个技巧：变形数组。在统计了所有数字出现的次数后，从前往后对cnt进行一次前缀和处理(每个元素都加上前面的元素之和)。在输出结果数组时，从后往前遍历原始数组，查到cnt中对应的数字即为他在最终结果中的位次(每次查询后需要将对应的cnt--，下次遇到相同值的元素时放在更前排)。
+
+代码如下：
+
+```cpp
+void countSort(vector<int>& nums) {
+    int n = nums.size();
+    // 1. 计算得到最大值与最小值
+    int maxNum = nums[0], minNum = nums[0];
+    for (auto i : nums) {
+        maxNum = max(maxNum, i);
+        minNum = min(minNum, i);
+    }
+    int d = maxNum - minNum + 1;
+    // 2. 计数
+    vector<int> cnt(d, 0);
+    for (auto i : nums) {
+        cnt[i-minNum]++;
+    }
+    // 3. 计数数组变形 - 前缀和
+    for (int i = 1; i < d; i++) {
+        cnt[i] += cnt[i-1];
+    }
+    // 4. 根据计数数组进行排序
+    vector<int> sortNum(n);
+    for (int i = n-1; i >= 0; i--) {
+        int p = --cnt[nums[i]-minNum];
+        sortNum[p] = nums[i];
+    }
+    nums.assign(sortNum.begin(), sortNum.end());
+}
+```
+时间复杂度：O(N+M), 空间复杂度：O(N+M), M表示数据阈值范围(代码中的d).
+
+**局限性**：① 对应数据范围相差特别大的数据难以应用（需要开辟很大的计数数组）→ 这个可以使用桶排序来解决；② 当数据是小数时难以应用。
+
+### 基数排序 *
+
+对于整数，还有一种常见的排序算法就是基数排序。其核心思想在于“按照每个数位，对每个数据元素进行比较”，可以根据从高到低排序 or 从低到高排序分为MSD和LSD两种具体算法。这里介绍从低到高的LSD算法。
+> 从高到低的算法需要采用桶排序的思想
+
+常见的就是10基数，LSD就是分别抽取每个元素在个位、十位、百位...上的数字，进行计数排序。代码如下：
+
+```cpp
+// 传入待排序数组与最大元素位数
+void radixSort(vector<int>& nums, int bit) {
+    int n = nums.size(), base = 1;
+    for (int k = 0; k < bit; k++, base *= 10) {     // 遍历每一位
+        // 计数排序
+        vector<int> cnt(10, 0);
+        for (int i : nums) {
+            cnt[(i/base)%10]++;   // 获取第k位上的数
+        }
+        for (int i = 1; i < 10; i++) {  // 计数数组变形
+            cnt[i] += cnt[i-1];
+        }
+        vector<int> tempNums(n);
+        for (int i = nums.size()-1; i >= 0; i--) {
+            int p = --cnt[(nums[i]/base)%10];
+            tempNums[p] = nums[i];
+        }
+        nums.assign(tempNums.begin(), tempNums.end());
+    }
+}
+```
+
+时间复杂度：O(N*M), 空间复杂度：O(N), M为最长元素的位数
+
+基数排序的具体题目可以参照题LeetCode6121.

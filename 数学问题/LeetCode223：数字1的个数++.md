@@ -28,7 +28,11 @@
 
 ## 解法一：模拟 + 分类讨论
 
-建议直接看[官方题解](https://leetcode.cn/problems/number-of-digit-one/solution/shu-zi-1-de-ge-shu-by-leetcode-solution-zopq/)，写的比较好，总体思路就是采用**模拟+分类讨论**。代码如下：
+建议直接看[官方题解](https://leetcode.cn/problems/number-of-digit-one/solution/shu-zi-1-de-ge-shu-by-leetcode-solution-zopq/)，写的比较好，总体思路就是采用**模拟+分类讨论**。
+
+其核心思想在于: 分别考虑每个位置上的数为1时，`1~n`范围内能出现的数字个数。
+
+代码如下：
 
 ```c++
 class Solution {

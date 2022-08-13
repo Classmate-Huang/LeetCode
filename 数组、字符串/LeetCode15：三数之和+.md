@@ -1,4 +1,4 @@
-# LeetCode15：三数之和
+s# LeetCode15：三数之和
 
 ## 题目
 
@@ -46,43 +46,29 @@
 
 排序后，就可以执行遍历，首先用指针`i`确定第一个元素`a`，然后在`[i+1,n-1]`中找到`b,c`使得`a+b+c=0`。在找b,c的过程中，使用双指针，找到`b+c=0-a`。值得注意的是：在整个过程，注意控制重复解（数组中可能存在重复元素），因此每次遍历完之后，下一个指向的元素不能是相同的元素。代码如下：
 
-```c++
+```cpp
 class Solution {
 public:
     vector<vector<int>> threeSum(vector<int>& nums) {
         int n = nums.size();
-        // 排序
         sort(nums.begin(), nums.end());
+        vector<vector<int>> ans;
         
-        vector<vector<int> > ans;
-		// 确定 a
-        for(int i=0; i<n; i++){	
-			// 下一次的a不是重复元素
-            if(i && nums[i]==nums[i-1]){
-                continue;
-            }
-            int l = i+1, r = n-1, target = 0-nums[i];
-			// 确定b c
-            while(l < r){
-                int tmp = nums[l] + nums[r];
-                if(tmp > target)
-                    r--;
-                else if(tmp < target)   
-                    l++;
-                else{
-                    // 输出结果
+        for (int i = 0; i < n; i++) {
+            if (i > 0 && nums[i] == nums[i-1])  continue;
+            int l = i+1, r = n-1, target = -1 * nums[i];
+            while (l < r) {
+                if (nums[l] + nums[r] == target) {
                     ans.push_back({nums[i], nums[l], nums[r]});
-                    // 控制重复解，下一次的nums[r]是不同元素
-                    do{
-                        r--;
-                    }while(l<r && nums[r]==nums[r+1]);
-					// 同理，控制重复解
-                    do{
-                        l++;
-                    }while(l<r && nums[l]==nums[l-1]);
+                    l++; r--;
+                    while (nums[l] == nums[l-1] && l < r)   l++;
+                    while (nums[r] == nums[r+1] && l < r)   r--;
                 }
+                else if (nums[l] + nums[r] < target) l++;
+                else    r--;
             }
         }
+        
         return ans;
     }
 };

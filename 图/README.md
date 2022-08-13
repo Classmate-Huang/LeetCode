@@ -107,7 +107,7 @@ while(!pri_que.empty()){
     if(visited[node])	continue;
     for(auto& [nextNode, weight]:adjList[node]){	// 遍历邻接链表
 		// 松弛条件
-        if(dist[node]+weight < nextNode){
+        if(dist[node]+weight < dist[nextNode]){
             dist[nextNode] = dist[node]+weight;
             pri_que.push(make_pair(nextNode, dist[nextNode]));
             pre[nextNode] = node;
